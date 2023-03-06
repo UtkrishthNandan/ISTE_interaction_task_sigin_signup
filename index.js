@@ -98,7 +98,9 @@ app.post('/signup',isNotSigned,(req,res)=>{
             new_password=String(hash);
             data[new_username]=new_password;
             data=JSON.stringify(data,null,2);
-            fs.writeFile('user_info.json',data,()=>{console.log('Added new user\n',data)});
+            fs.writeFile('user_info.json',data,()=>{
+                //console.log('Added new user\n',data)
+            });
             data=JSON.parse(data) 
             data_keys=Object.keys(data)
             res.redirect('/')
