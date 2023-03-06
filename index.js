@@ -2,7 +2,8 @@ const express=require('express');
 const app=express();
 const path=require('path');
 const fs=require('fs');
-const { type } = require('os');
+const { type } = require('os');//auto imported
+const bcrypt=require('bcrypt');
 app.use(express.urlencoded({extended:true}));
 app.use(express.json())
 app.use(express.static('public'));
@@ -51,10 +52,13 @@ app.get('/signout',isSigned,(req,res)=>{
 app.get('/*',(req,res)=>{
     res.redirect('/');
 });
-
+const check_password=(password)=>{
+    var verified;
+    bcrypt.compare()
+}
 app.post('/',isNotSigned,(req,res)=>{
     if(data_keys.includes(req.body.username)){
-        
+        /*
         if(data[req.body.username]==req.body.password){
             signed=true;
             
@@ -63,7 +67,17 @@ app.post('/',isNotSigned,(req,res)=>{
         else{
             
             res.redirect('/')
-        }
+        }*/
+        bcrypt.compare(req.body.password,data[req.body.username])
+              .then((result)=>{
+                if(result){
+                    signed=true;
+                    res.redirect('/redirected');
+                }
+                else{
+                    res.redirect('/');
+                }
+              });
     }
     else{
         
@@ -77,17 +91,22 @@ app.post('/signup',isNotSigned,(req,res)=>{
         res.redirect('/signup');
     }
     else{
-        
+        const saltRounds=5;
         var new_password=String(req.body.password)
         var new_username=String(req.body.username);
+        bcrypt.hash(new_password,saltRounds).then(hash=>{
+            new_password=String(hash);
+            data[new_username]=new_password;
+            data=JSON.stringify(data,null,2);
+            fs.writeFile('user_info.json',data,()=>{console.log('Added new user\n',data)});
+            data=JSON.parse(data) 
+            data_keys=Object.keys(data)
+            res.redirect('/')
+        })
         
         
-        data[new_username]=new_password;
-        data=JSON.stringify(data,null,2);
-        fs.writeFile('user_info.json',data,()=>{console.log('Added new user\n',data)});
-        data=JSON.parse(data) 
-        data_keys=Object.keys(data)
-        res.redirect('/')
+        
+        
     }
 });
 app.listen(3000,()=>{
